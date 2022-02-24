@@ -1,0 +1,10 @@
+* A Suckless Phone: PinePhone (Pro) + SXMO
+
+Material for a talk at the [[https://chemnitzer.linux-tage.de/2022/][Chemnitzer Linux Tage 2022]].
+
+** Abstract (de)
+#+begin_quote
+In diesem Vortrag schauen wir uns das PinePhone und PinePhone Pro an, gehen auf
+die verfügbaren und denkbaren Hardware Add-Ons ein und entdecken mit SXMO eine
+für Mobiltelefone ungewohnte aber extrem flexible Bedienumgebung.
+#+end_quote
