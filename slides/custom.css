@@ -1,0 +1,18 @@
+.reveal {
+    text-align: left;
+}
+
+.reveal ul {
+    display: block;
+}
+
+.reveal ol {
+    display: block;
+}
+
+.slide-footer {
+    height: 10vh;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}

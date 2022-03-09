@@ -1,0 +1,451 @@
+#+title: A Suckless Phone - PinePhone (Pro) + SXMO
+#+author: wose
+#+date: <2022-03-12 Sat 14:00>
+#+email: wose (at) zuendmasse (dot) de
+
+#+options: num:nil toc:nil
+#+options: reveal_center:nil reveal_control:nil reveal_progress:nil reveal_title_slide:nil reveal_slide_number:nil
+#+options: reveal_width:1920 reveal_height:1080
+#+reveal_root:  ./reveal.js/
+#+reveal_theme: ./clt.css
+#+reveal_trans: none
+#+reveal_min_scale: 0.2
+#+reveal_max_scale: 2.5
+#+reveal_talk_qr_code: ./images/code.png
+#+reveal_title_slide:<h2>A Suckless Phone</h2><h3>PinePhone (Pro) + SXMO</h3><br><p>wose</p><br><p>2022-03-12 14:00</p>
+#+reveal_extra_css: ./custom.css
+
+#+options: reveal_center:nil
+
+* Disclaimer
+#+BEGIN_NOTES
+Wir schauen uns Linux Phones am Beispiel des PinePhones an.
+Ich werde nicht von Pine64 dafuer bezahlt.
+#+END_NOTES
+
+* Slides, Links, ...
+#+BEGIN_NOTES
+- ziemlich viele Links in den Slides zu Quellen und
+  weiterfuehrenden Infos
+- wichtig ist nur dieser zu Slides mit klickbaren Links
+#+END_NOTES
+
+[[./images/code.png]]
+
+[[https://github.com/wose/clt22][github.com/wose/clt22]]
+
+
+* Hardware
+[[./images/pp_front.png]]
+[[./images/pp_back.png]]
+
+** Specs
+#+BEGIN_NOTES
+- aarch64
+- WLAN
+- GPS/GLONASS
+- Li-Po 3000 mAh
+#+END_NOTES
+
+|           | PinePhone              | PinePhone Pro                            |
+|-----------+------------------------+------------------------------------------|
+| Chipset   | Allwinner A64          | Rockchip rk3399s                         |
+| CPU       | 4x 1152 MHz Cortex-A53 | 4x1.5 GHz Cortex-A53 & 2x2Ghz Cortex-A72 |
+| GPU       | Mali-400 MP2           | Mali-T860 MP4                            |
+| Display   | 720x1440 IPS           | 720x1440 IPS                             |
+| eMMC      | 16 GB / 32 GB          | 128 GB                                   |
+| RAM       | 2 GB / 3 GB            | 4 GB                                     |
+| Front Cam | 2MP, f/2.8, 1/5″       | 8MP, OmniVision OV8858                   |
+| Main Cam  | 5MP, 1/4″, LED Flash   | 13MP, Sony iMX258, LED Flash             |
+| Bluetooth | 4.0                    | 5.0                                      |
+| Modem     | Quectel EG25-G         | Quectel EG25-G                           |
+
+** Modem
+#+BEGIN_NOTES
+- 0 binary blobs im userspace
+- einziger closed source Teil ist TZ (Arm Trust Zone) Kernel und ADSP firmware
+- Kommunikation mit dem Modem ueber SMS
+- Fake Calls zum Testen von Anwendungen etc.
+#+END_NOTES
+
+- LTE-FDD, LTE-TDD
+- WCDMA
+- GSM
+- A-GPS
+- GLONASS
+
+- Firmware
+  - https://github.com/Biktorgj/pinephone_modem_sdk
+
+** Overview
+#+BEGIN_NOTES
+- Kamera umschalten
+- Hardwareknoepfe zeigen
+- RGB LED
+- Klinke
+- USB-C
+- Cover entfernen
+- Batterie
+- POGO Pins
+- DIP Schalter
+#+END_NOTES
+
+** POGO Pins und DIP Schalter
+#+BEGIN_NOTES
+- DIP Schalter um Komponenten vom Strom zu trennen
+  - wird Klinke abgeschaltet bekommt man einen UART
+- POGO Pins mit 5V, BAT, INT, SCL, SDA, GND
+  - ermoeglich Hardwareerweiterungen
+#+END_NOTES
+
+[[./images/pogo_dip.png]]
+
+** Hardware Addons
+#+BEGIN_NOTES
+- Kamera umschalten und Sachen zeigen
+- Kompatibel mit Pro
+- Keyboard firmware by Megi (Ondrej Jirman)
+#+END_NOTES
+
+- Convergence Dock
+- LORA
+  - Semtech SX1262
+- Wireless Charging
+  - Qi Wireless
+  - Wireless Power Consortium
+- Fingerabdrucksensor
+  - PixelAuth P2SDS-NABL2-S05
+- Keyboard
+  - 6000 mAh
+  - IP5209 charging controller
+  - EM85F684A USB controller
+  - https://xff.cz/git/pinephone-keyboard
+
+** Cyberpunk by Martijn Braam
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://blog.brixit.nl/making-a-backcover-extension-for-the-pinephone/">https://blog.brixit.nl/making-a-backcover-extension-for-the-pinephone/</a>
+:END:
+#+BEGIN_NOTES
+- oder DIY
+#+END_NOTES
+
+[[./images/i2c_thermal_martijn_braam.png]]
+
+** Schaltpläne
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://wiki.pine64.org/wiki/PinePhone">wiki.pine64.org/wiki/PinePhone</a>
+:END:
+
+[[./images/emmc.png]]
+
+** Bestückungspläne
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://wiki.pine64.org/wiki/PinePhone">wiki.pine64.org/wiki/PinePhone</a>
+:END:
+
+[[./images/placement.png]]
+
+* Software
+** Motivation
+#+BEGIN_NOTES
+Hardwarestatus ist ganz gut:
+- wir koennen einzelne Komponenten austauschen (nicht nur den Akku)
+- haben Erweiterungsmoeglichkeiten
+- Dokumentation durch Hersteller und Community
+
+Wir koennten auch ein Android System auf dem Pinephone installieren, warum lieber nicht?
+
+Warum ein Linux Phone?
+Warum Mainline Kernel?
+Dazu erst einmal einen Blick auf den Downstream Kernel in Android.
+#+END_NOTES
+
+*** Downstream Kernel
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://source.android.com/devices/architecture/kernel/generic-kernel-image">source.android.com/devices/architecture/kernel/generic-kernel-image</a>
+:END:
+
+#+BEGIN_NOTES
+- Upstream: The Linux kernel from kernel.org
+- AOSP: Additional Android-specific patches from AOSP common kernels
+- Vendor: SoC and peripheral enablement and optimization patches from vendors
+- OEM/device: Additional device drivers and customizations
+
+- Aenderungen sind umfangreicher als man vermuten wuerde
+- bis zu 50% des Codes auf dem Geraet ist out-of-tree
+- Treiber im User Space mit kleiner Kernel Komponente
+- GPL2
+#+END_NOTES
+
+[[./images/generic-kernel-image-overview.png]]
+*** Downstream Status
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://not.mainline.space">not.mainline.space</a>
+:END:
+
+#+BEGIN_NOTES
+- Beispiel ueber 5mio Zeilen Code unterschied zu Mainline
+#+END_NOTES
+
+| Kernel        | OnePlus 6 downstream |
+| Branch/Tag    | lineage-18.1         |
+| Branched from | v4.9.227             |
+| Total changes | +5,655,241 / -29,256 |
+
+*** Mobile Kernel Mainline
+#+BEGIN_NOTES
+Mehr Informationen gab es im Mobile Track der FOSDEM.
+Sehenswert ist der 'Mobile Kernel Mainline' Talk von Luca Weiss
+
+Zusammenfassung
+- wenn wir alle Treiber in Mainline haben haben wir auch zeitlich unbegrenzte Softwareunterstuetzung der Hardware
+- nicht nur die Hardware muss reparierbar sein, auch die Software um nachhaltig zu sein
+#+END_NOTES
+
+[[https://video.fosdem.org/2022/D.mobile/][video.fosdem.org/2022/D.mobile]]
+
+** Boot
+:PROPERTIES:
+:END:
+
+#+BEGIN_NOTES
+- u-boot: verbreiteter universeller bootloader fuer embedded Geraete
+- tow-boot: benutzerfreundliche distribution von u-boot
+- p-boot:
+  - PinePhone bootloader by Megi
+  - superschnell < 1s bis zum /bin/init
+- levinboot:
+  - PinePhone Pro
+  - schneller als u-boot
+  - Megis fork
+  - praktisch fuer Kernelentwicklung
+
+- Booten von eMMC und SD-Karte, bei PPP Prioritaet anders
+#+END_NOTES
+
+- [[https://www.denx.de/wiki/U-Boot/][denx.de/wiki/U-Boot]]
+- [[https://tow-boot.org/][tow-boot.org]]
+- [[https://xnux.eu/p-boot/][xnux.eu/p-boot]]
+- [[https://megous.com/git/levinboot/][megous.com/git/levinboot]]
+
+** Distributionen
+#+BEGIN_NOTES
+Nachdem wir wissen wie wir einen Kernel booten, suchen wir uns eine Distribution aus.
+- Freie Auswahl
+- postmarketOS besonders hervorheben
+- Liste geht weiter: Gentoo, 
+#+END_NOTES
+
+- [[https://postmarketos.org/][postmarketOS.org]]
+- [[https://mobian.org/][mobian.org]]
+- [[https://github.com/manjaro-pinephone][github.com/manjaro-pinephone]]
+- [[https://mobile.nixos.org/][mobile.nixos.org]]
+- [[https://github.com/dreemurrs-embedded/Pine64-Arch][github.com/dreemurrs-embedded/Pine64-Arch]]
+- ...
+
+- Pine64 Wiki
+  - [[https://wiki.pine64.org/wiki/PinePhone_Software_Releases][PinePhone]]
+  - [[https://wiki.pine64.org/wiki/PinePhone_Pro_Software_Releases][PinePhone Pro]]
+
+** Multi Distro Image
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://xnux.eu/p-boot-demo">xnux.eu/p-boot-demo</a>
+:END:
+
+#+BEGIN_NOTES
+- 15 Distributionen mit unterschiedlichen UIs
+- 6.9 GiB
+- p-boot
+- nur PinePhone nicht fuer PPP
+#+END_NOTES
+
+[[./images/menu2.webp]]
+
+** Mobile UIs
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://plasma-mobile.org">plasma-mobile.org</a> | <a href="https://gitlab.gnome.org/World/Phosh/phosh">gitlab.gnome.org/World/Phosh/phosh</a>
+:END:
+#+BEGIN_NOTES
+Wir koennen booten, haben einen Kernel und eine Distribution mit Paketen/Anwendungen
+die wir installieren koennen. Jetzt fehlt noch das passende Nutzerinterface.
+
+- 'Mainstream' UIs - Kacheln
+  - Plasma Mobile (KDE) (links)
+  - Phosh (Purism fuer Librem5, Gnome) (rechts)
+
+- SXMO ist anders
+
+- was steht uns zur verfuegung
+  - Touchorientiert
+  - aber wir haben auch 3 Hardwareknoepfe
+#+END_NOTES
+
+[[./images/plasma_mobile.png]]
+[[./images/phosh_overview.png]]
+
+** SXMO - Simple X Mobile
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://sxmo.org">sxmo.org</a>
+:END:
+#+BEGIN_NOTES
+- X als Platzhalter fuer Xorg oder Wayland
+
+Idee
+- wir nutzen kleine Anwendungen die wir aus dem Desktopumfeld kennen
+- konfigurieren sie entsprechend
+- kleben alles mit Shellscripten zusammen
+
+- kleine Anwendungen die genau eine Aufgabe erfuellen
+- Komplexitaet vermeiden wo moeglich (suckless)
+#+END_NOTES
+
+[[./images/pp_front.png]]
+
+** SXMO - Tools
+|                           | Xorg  | Wayland |
+|---------------------------+-------+---------|
+| Window Manager/Compositor | DWM   | sway    |
+| Terminal                  | st    | foot    |
+| Menu                      | dmenu | bemenu  |
+| Virtual Keyboard          | svkbd | wvkbd   |
+| Desktop Widgets           | conky | wayout  |
+
+- lisgd
+- tinydm
+- ModemManager
+- NetworkManager
+
+** SXMO - Buttons
+#+BEGIN_NOTES
+Kamera umschalten und alles kurz zeigen
+#+END_NOTES
+
+- Volume Up
+  - 1 tap Context Menu
+  - 2 taps System Menu
+  - 3 taps Window Menu
+- Volume Down
+  - 1 tap Toggle Keyboard
+  - 2 taps Toggle Layout
+  - 3 taps Kill Window
+- Power
+  - 1 tap Lock Screen
+  - 2 taps Lock Screen (On)
+  - 3 taps Terminal
+
+** SXMO - Gesten
+:PROPERTIES:
+:reveal_slide_footer: CC-BY-SA 4.0 <a href="https://sxmo.org">sxmo.org</a>
+:END:
+#+BEGIN_NOTES
+- alles kurz zeigen
+- Aktion kann anders sein, je nachdem wie lang der Swipe ist
+- alle Gesten haben eine Randkomponente, Swipes in der Mitte
+  des Bildschirms werden an die Anwendung durchgereicht
+#+END_NOTES
+
+[[./images/gestures.png]]
+
+** SXMO - Menusystem
+#+BEGIN_NOTES
+- durch die Menus gehen
+- anmerken, dass die Einträge ergänzt und angepasst werden können
+- Vim als App starten und Kontextmenu zeigen
+#+END_NOTES
+
+- Toucheingabe
+- Hardwareknöpfe
+
+** SXMO - Konfiguration
+- =$XDG_CONFIG_DIR= (=~/.config/sxmo/=)
+- =profile=
+  - SXMO spezifische Umgebungsvariablen
+  - =~/.profile= wird davor von tinydm geladen
+- =xinit=
+- =sway=
+- =contacts.tsv=
+  - Telefonnummer -> Name
+- =block.tsv=
+  - geblockte Nummern
+- =sfeedrc=
+- =userscripts/=
+  - landen automatisch im Menusystem
+
+** SXMO - Hooks
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://man.sr.ht/~anjan/sxmo-docs-next/USERGUIDE.md#stronghooksstrong">man.sr.ht/~anjan/sxmo-docs-next/USERGUIDE.md</a>
+:END:
+
+
+- Standard Hooks in =/usr/share/sxmo/default_hooks/=
+- Benutzer Hooks in =$XDG_CONFIG_HOME/sxmo/hooks/=
+\\
+- =hooks/sxmo_hook_ring.sh=
+- =hooks/sxmo_hook_pickup.sh=
+- =hooks/sxmo_hook_lisgdstart.sh=
+- =hooks/sxmo_hook_desktopwidget.sh=
+- =hooks/sxmo_hook_contextmenu.sh=
+
+** SXMO - Hooks Beispiel
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://git.sr.ht/~mil/sxmo-utils/tree/master/item/configs/default_hooks/sxmo_hook_ring.sh">git.sr.ht/~mil/sxmo-utils/tree/master/item/configs/default_hooks/sxmo_hook_ring.sh</a>
+:END:
+
+=sxmo_hook_ring.sh=
+#+begin_src shell
+#!/bin/sh
+
+# This script is executed (asynchronously) when you get an incoming call
+# You can use it to play a ring tone
+
+# $1 = Contact Name or Number (if not in contacts)
+
+# Start the mpv ring until another hook kill it or the max (10) is reached
+mpv --quiet --no-video --loop=10 /usr/share/sxmo/ring.ogg &
+MPVID=$!
+echo "$MPVID" > "$XDG_RUNTIME_DIR/sxmo.ring.pid"
+
+# Vibrate while mpv is running
+while kill -0 $MPVID; do
+		sxmo_vibrate 1500
+		sleep 0.5
+done
+#+end_src
+
+
+** SXMO - Umgebungsvariablen
+:PROPERTIES:
+:reveal_slide_footer: <a href="https://man.sr.ht/~anjan/sxmo-docs-next/USERGUIDE.md#strongenvironment-variablesstrong">man.sr.ht/~anjan/sxmo-docs-next/USERGUIDE.md</a>
+:END:
+#+BEGIN_NOTES
+- weitere Konfiguration der Tools und wie sie miteinander interagieren
+#+END_NOTES
+
+- =$TERMCMD=
+- =$BROWSER=
+- =$EDITOR=
+\\
+- =$KEYBOARD_ARGS=
+  - =-o | clickclack -f /usr/share/sxmo/keytap.wav=
+
+** Zusammenfassung
+#+BEGIN_NOTES
+- coole Hardware mit Erweiterungsmöglichkeiten
+- verschiedenste Benutzeroberflächen zwischen denen wir wählen können
+- SXMO als etwas anders und sehr flexibel kennengelernt
+- sehr Hackerfreundlich
+- Hoffnung auf mehr davon von verschiedenen Herstellern
+- wenn ihr auch rumspielen wollt schaut doch mal im postmarketOS wiki ob
+  vielleicht eines eurer alten Smartphones zumindest teilweise unterstützt wird
+#+END_NOTES
+
+[[./images/pp_keyboard.png]]
+
+** Fragen/Ideen
+\\
+\\
+| WWW                 | https://zuendmasse.de |
+| Mail                | wose@zuendmasse.de    |
+| IRC libera.chat     | wose                  |
+| Matrix              | @wose:zuendmasse.de   |
+| GitHub/GitLab/sr.ht | wose                  |
