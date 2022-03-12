@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>A Suckless Phone - PinePhone (Pro) + SXMO</title>
+<meta name="author" content="wose"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="./reveal.js/dist/reveal.css"/>
+
+<link rel="stylesheet" href="./clt.css" id="theme"/>
+
+<link rel="stylesheet" href="./custom.css"/>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h2>A Suckless Phone</h2><h3>PinePhone (Pro) + SXMO</h3><br><p>wose</p><br><p>2022-03-12 14:00</p>
+</section>
+
+<section>
+<section id="slide-org0908967">
+<h2 id="org0908967">Disclaimer</h2>
+<aside class="notes">
+<p>
+Wir schauen uns Linux Phones am Beispiel des PinePhones an.
+Ich werde nicht von Pine64 dafuer bezahlt.
+</p>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orga964f27">
+<h2 id="orga964f27">Slides, Links, &#x2026;</h2>
+<aside class="notes">
+<ul>
+<li>ziemlich viele Links in den Slides zu Quellen und
+weiterfuehrenden Infos</li>
+<li>wichtig ist nur dieser zu Slides mit klickbaren Links</li>
+
+</ul>
+
+</aside>
+
+
+<div id="org7cc8b8b" class="figure">
+<p><img src="./images/code.png" alt="code.png" />
+</p>
+</div>
+
+<p>
+<a href="https://github.com/wose/clt22">github.com/wose/clt22</a>
+</p>
+
+
+</section>
+</section>
+<section>
+<section id="slide-orgd3b54df">
+<h2 id="orgd3b54df">Hardware</h2>
+<p>
+<img src="./images/pp_front.png" alt="pp_front.png" />
+<img src="./images/pp_back.png" alt="pp_back.png" />
+</p>
+
+</section>
+<section id="slide-orgd8ad331">
+<h3 id="orgd8ad331">Specs</h3>
+<aside class="notes">
+<ul>
+<li>aarch64</li>
+<li>WLAN</li>
+<li>GPS/GLONASS</li>
+<li>Li-Po 3000 mAh</li>
+
+</ul>
+
+</aside>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">PinePhone</th>
+<th scope="col" class="org-left">PinePhone Pro</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Chipset</td>
+<td class="org-left">Allwinner A64</td>
+<td class="org-left">Rockchip rk3399s</td>
+</tr>
+
+<tr>
+<td class="org-left">CPU</td>
+<td class="org-left">4x 1152 MHz Cortex-A53</td>
+<td class="org-left">4x1.5 GHz Cortex-A53 &amp; 2x2Ghz Cortex-A72</td>
+</tr>
+
+<tr>
+<td class="org-left">GPU</td>
+<td class="org-left">Mali-400 MP2</td>
+<td class="org-left">Mali-T860 MP4</td>
+</tr>
+
+<tr>
+<td class="org-left">Display</td>
+<td class="org-left">720x1440 IPS</td>
+<td class="org-left">720x1440 IPS</td>
+</tr>
+
+<tr>
+<td class="org-left">eMMC</td>
+<td class="org-left">16 GB / 32 GB</td>
+<td class="org-left">128 GB</td>
+</tr>
+
+<tr>
+<td class="org-left">RAM</td>
+<td class="org-left">2 GB / 3 GB</td>
+<td class="org-left">4 GB</td>
+</tr>
+
+<tr>
+<td class="org-left">Front Cam</td>
+<td class="org-left">2MP, f/2.8, 1/5″</td>
+<td class="org-left">8MP, OmniVision OV8858</td>
+</tr>
+
+<tr>
+<td class="org-left">Main Cam</td>
+<td class="org-left">5MP, 1/4″, LED Flash</td>
+<td class="org-left">13MP, Sony iMX258, LED Flash</td>
+</tr>
+
+<tr>
+<td class="org-left">Bluetooth</td>
+<td class="org-left">4.0</td>
+<td class="org-left">5.0</td>
+</tr>
+
+<tr>
+<td class="org-left">Modem</td>
+<td class="org-left">Quectel EG25-G</td>
+<td class="org-left">Quectel EG25-G</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="slide-org5640d35">
+<h3 id="org5640d35">Modem</h3>
+<aside class="notes">
+<ul>
+<li>0 binary blobs im userspace</li>
+<li>einziger closed source Teil ist TZ (Arm Trust Zone) Kernel und ADSP firmware</li>
+<li>Kommunikation mit dem Modem ueber SMS</li>
+<li>Fake Calls zum Testen von Anwendungen etc.</li>
+
+</ul>
+
+</aside>
+
+<ul>
+<li>LTE-FDD, LTE-TDD</li>
+<li>WCDMA</li>
+<li>GSM</li>
+<li>A-GPS</li>
+<li>GLONASS</li>
+
+<li>Firmware
+<ul>
+<li><a href="https://github.com/Biktorgj/pinephone_modem_sdk">https://github.com/Biktorgj/pinephone_modem_sdk</a></li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgead2418">
+<h3 id="orgead2418">Overview</h3>
+<aside class="notes">
+<ul>
+<li>Kamera umschalten</li>
+<li>Hardwareknoepfe zeigen</li>
+<li>RGB LED</li>
+<li>Klinke</li>
+<li>USB-C</li>
+<li>Cover entfernen</li>
+<li>Batterie</li>
+<li>POGO Pins</li>
+<li>DIP Schalter</li>
+
+</ul>
+
+</aside>
+
+</section>
+<section id="slide-orgd72f536">
+<h3 id="orgd72f536">POGO Pins und DIP Schalter</h3>
+<aside class="notes">
+<ul>
+<li>DIP Schalter um Komponenten vom Strom zu trennen
+<ul>
+<li>wird Klinke abgeschaltet bekommt man einen UART</li>
+
+</ul></li>
+<li>POGO Pins mit 5V, BAT, INT, SCL, SDA, GND
+<ul>
+<li>ermoeglich Hardwareerweiterungen</li>
+
+</ul></li>
+
+</ul>
+
+</aside>
+
+
+<div id="orga3a87bd" class="figure">
+<p><img src="./images/pogo_dip.png" alt="pogo_dip.png" />
+</p>
+</div>
+
+</section>
+<section id="slide-orga261b27">
+<h3 id="orga261b27">Hardware Addons</h3>
+<aside class="notes">
+<ul>
+<li>Kamera umschalten und Sachen zeigen</li>
+<li>Kompatibel mit Pro</li>
+<li>Keyboard firmware by Megi (Ondrej Jirman)</li>
+
+</ul>
+
+</aside>
+
+<ul>
+<li>Convergence Dock</li>
+<li>LORA
+<ul>
+<li>Semtech SX1262</li>
+
+</ul></li>
+<li>Wireless Charging
+<ul>
+<li>Qi Wireless</li>
+<li>Wireless Power Consortium</li>
+
+</ul></li>
+<li>Fingerabdrucksensor
+<ul>
+<li>PixelAuth P2SDS-NABL2-S05</li>
+
+</ul></li>
+<li>Keyboard
+<ul>
+<li>6000 mAh</li>
+<li>IP5209 charging controller</li>
+<li>EM85F684A USB controller</li>
+<li><a href="https://xff.cz/git/pinephone-keyboard">https://xff.cz/git/pinephone-keyboard</a></li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-org3996016">
+<h3 id="org3996016">Cyberpunk by Martijn Braam</h3>
+<aside class="notes">
+<ul>
+<li>oder DIY</li>
+
+</ul>
+
+</aside>
+
+
+<div id="orge4b2d0a" class="figure">
+<p><img src="./images/i2c_thermal_martijn_braam.png" alt="i2c_thermal_martijn_braam.png" />
+</p>
+</div>
+<div class="slide-footer"><a href="https://blog.brixit.nl/making-a-backcover-extension-for-the-pinephone/">https://blog.brixit.nl/making-a-backcover-extension-for-the-pinephone/</a></div>
+
+</section>
+<section id="slide-org78a002b">
+<h3 id="org78a002b">Schaltpläne</h3>
+
+<div id="org9e5c99a" class="figure">
+<p><img src="./images/emmc.png" alt="emmc.png" />
+</p>
+</div>
+<div class="slide-footer"><a href="https://wiki.pine64.org/wiki/PinePhone">wiki.pine64.org/wiki/PinePhone</a></div>
+
+</section>
+<section id="slide-org725532e">
+<h3 id="org725532e">Bestückungspläne</h3>
+
+<div id="org4aea56c" class="figure">
+<p><img src="./images/placement.png" alt="placement.png" />
+</p>
+</div>
+<div class="slide-footer"><a href="https://wiki.pine64.org/wiki/PinePhone">wiki.pine64.org/wiki/PinePhone</a></div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgd3449d3">
+<h2 id="orgd3449d3">Software</h2>
+<div class="outline-text-2" id="text-orgd3449d3">
+</div>
+</section>
+<section id="slide-orgbc215e6">
+<h3 id="orgbc215e6">Motivation</h3>
+<aside class="notes">
+<p>
+Hardwarestatus ist ganz gut:
+</p>
+<ul>
+<li>wir koennen einzelne Komponenten austauschen (nicht nur den Akku)</li>
+<li>haben Erweiterungsmoeglichkeiten</li>
+<li>Dokumentation durch Hersteller und Community</li>
+
+</ul>
+
+<p>
+Wir koennten auch ein Android System auf dem Pinephone installieren, warum lieber nicht?
+</p>
+
+<p>
+Warum ein Linux Phone?
+Warum Mainline Kernel?
+Dazu erst einmal einen Blick auf den Downstream Kernel in Android.
+</p>
+
+</aside>
+
+</section>
+<section id="slide-orgeff2b66">
+<h4 id="orgeff2b66">Downstream Kernel</h4>
+<aside class="notes">
+<ul>
+<li>Upstream: The Linux kernel from kernel.org</li>
+<li>AOSP: Additional Android-specific patches from AOSP common kernels</li>
+<li>Vendor: SoC and peripheral enablement and optimization patches from vendors</li>
+<li>OEM/device: Additional device drivers and customizations</li>
+
+<li>Aenderungen sind umfangreicher als man vermuten wuerde</li>
+<li>bis zu 50% des Codes auf dem Geraet ist out-of-tree</li>
+<li>Treiber im User Space mit kleiner Kernel Komponente</li>
+<li>GPL2</li>
+
+</ul>
+
+</aside>
+
+
+<div id="org6a66082" class="figure">
+<p><img src="./images/generic-kernel-image-overview.png" alt="generic-kernel-image-overview.png" />
+</p>
+</div>
+<div class="slide-footer"><a href="https://source.android.com/devices/architecture/kernel/generic-kernel-image">source.android.com/devices/architecture/kernel/generic-kernel-image</a></div>
+</section>
+<section id="slide-org49e5a1c">
+<h4 id="org49e5a1c">Downstream Status</h4>
+<aside class="notes">
+<ul>
+<li>Beispiel ueber 5mio Zeilen Code unterschied zu Mainline</li>
+
+</ul>
+
+</aside>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Kernel</td>
+<td class="org-left">OnePlus 6 downstream</td>
+</tr>
+
+<tr>
+<td class="org-left">Branch/Tag</td>
+<td class="org-left">lineage-18.1</td>
+</tr>
+
+<tr>
+<td class="org-left">Branched from</td>
+<td class="org-left">v4.9.227</td>
+</tr>
+
+<tr>
+<td class="org-left">Total changes</td>
+<td class="org-left">+5,655,241 / -29,256</td>
+</tr>
+</tbody>
+</table>
+<div class="slide-footer"><a href="https://not.mainline.space">not.mainline.space</a></div>
+
+</section>
+<section id="slide-org78565d0">
+<h4 id="org78565d0">Mobile Kernel Mainline</h4>
+<aside class="notes">
+<p>
+Mehr Informationen gab es im Mobile Track der FOSDEM.
+Sehenswert ist der &rsquo;Mobile Kernel Mainline&rsquo; Talk von Luca Weiss
+</p>
+
+<p>
+Zusammenfassung
+</p>
+<ul>
+<li>wenn wir alle Treiber in Mainline haben haben wir auch zeitlich unbegrenzte Softwareunterstuetzung der Hardware</li>
+<li>nicht nur die Hardware muss reparierbar sein, auch die Software um nachhaltig zu sein</li>
+
+</ul>
+
+</aside>
+
+<p>
+<a href="https://video.fosdem.org/2022/D.mobile/">video.fosdem.org/2022/D.mobile</a>
+</p>
+
+</section>
+<section id="slide-org6ccaf77">
+<h3 id="org6ccaf77">Boot</h3>
+<aside class="notes">
+<ul>
+<li>u-boot: verbreiteter universeller bootloader fuer embedded Geraete</li>
+<li>tow-boot: benutzerfreundliche distribution von u-boot</li>
+<li>p-boot:
+<ul>
+<li>PinePhone bootloader by Megi</li>
+<li>superschnell &lt; 1s bis zum /bin/init</li>
+
+</ul></li>
+<li>levinboot:
+<ul>
+<li>PinePhone Pro</li>
+<li>schneller als u-boot</li>
+<li>Megis fork</li>
+<li>praktisch fuer Kernelentwicklung</li>
+
+</ul></li>
+
+<li>Booten von eMMC und SD-Karte, bei PPP Prioritaet anders</li>
+
+</ul>
+
+</aside>
+
+<ul>
+<li><a href="https://www.denx.de/wiki/U-Boot/">denx.de/wiki/U-Boot</a></li>
+<li><a href="https://tow-boot.org/">tow-boot.org</a></li>
+<li><a href="https://xnux.eu/p-boot/">xnux.eu/p-boot</a></li>
+<li><a href="https://megous.com/git/levinboot/">megous.com/git/levinboot</a></li>
+
+</ul>
+
+</section>
+<section id="slide-org989c48e">
+<h3 id="org989c48e">Distributionen</h3>
+<aside class="notes">
+<p>
+Nachdem wir wissen wie wir einen Kernel booten, suchen wir uns eine Distribution aus.
+</p>
+<ul>
+<li>Freie Auswahl</li>
+<li>postmarketOS besonders hervorheben</li>
+<li>Liste geht weiter: Gentoo,</li>
+
+</ul>
+
+</aside>
+
+<ul>
+<li><a href="https://postmarketos.org/">postmarketOS.org</a></li>
+<li><a href="https://mobian.org/">mobian.org</a></li>
+<li><a href="https://github.com/manjaro-pinephone">github.com/manjaro-pinephone</a></li>
+<li><a href="https://mobile.nixos.org/">mobile.nixos.org</a></li>
+<li><a href="https://github.com/dreemurrs-embedded/Pine64-Arch">github.com/dreemurrs-embedded/Pine64-Arch</a></li>
+<li>&#x2026;</li>
+
+<li>Pine64 Wiki
+<ul>
+<li><a href="https://wiki.pine64.org/wiki/PinePhone_Software_Releases">PinePhone</a></li>
+<li><a href="https://wiki.pine64.org/wiki/PinePhone_Pro_Software_Releases">PinePhone Pro</a></li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-org08a925f">
+<h3 id="org08a925f">Multi Distro Image</h3>
+<aside class="notes">
+<ul>
+<li>15 Distributionen mit unterschiedlichen UIs</li>
+<li>6.9 GiB</li>
+<li>p-boot</li>
+<li>nur PinePhone nicht fuer PPP</li>
+
+</ul>
+
+</aside>
+
+
+<div id="org1e0ff8c" class="figure">
+<p><img src="./images/menu2.webp" alt="menu2.webp" />
+</p>
+</div>
+<div class="slide-footer"><a href="https://xnux.eu/p-boot-demo">xnux.eu/p-boot-demo</a></div>
+
+</section>
+<section id="slide-org108f655">
+<h3 id="org108f655">Mobile UIs</h3>
+<aside class="notes">
+<p>
+Wir koennen booten, haben einen Kernel und eine Distribution mit Paketen/Anwendungen
+die wir installieren koennen. Jetzt fehlt noch das passende Nutzerinterface.
+</p>
+
+<ul>
+<li>&rsquo;Mainstream&rsquo; UIs - Kacheln
+<ul>
+<li>Plasma Mobile (KDE) (links)</li>
+<li>Phosh (Purism fuer Librem5, Gnome) (rechts)</li>
+
+</ul></li>
+
+<li>SXMO ist anders</li>
+
+<li>was steht uns zur verfuegung
+<ul>
+<li>Touchorientiert</li>
+<li>aber wir haben auch 3 Hardwareknoepfe</li>
+
+</ul></li>
+
+</ul>
+
+</aside>
+
+<p>
+<img src="./images/plasma_mobile.png" alt="plasma_mobile.png" />
+<img src="./images/phosh_overview.png" alt="phosh_overview.png" />
+</p>
+<div class="slide-footer"><a href="https://plasma-mobile.org">plasma-mobile.org</a> | <a href="https://gitlab.gnome.org/World/Phosh/phosh">gitlab.gnome.org/World/Phosh/phosh</a></div>
+
+</section>
+<section id="slide-org1632317">
+<h3 id="org1632317">SXMO - Simple X Mobile</h3>
+<aside class="notes">
+<ul>
+<li>X als Platzhalter fuer Xorg oder Wayland</li>
+
+</ul>
+
+<p>
+Idee
+</p>
+<ul>
+<li>wir nutzen kleine Anwendungen die wir aus dem Desktopumfeld kennen</li>
+<li>konfigurieren sie entsprechend</li>
+<li>kleben alles mit Shellscripten zusammen</li>
+
+<li>kleine Anwendungen die genau eine Aufgabe erfuellen</li>
+<li>Komplexitaet vermeiden wo moeglich (suckless)</li>
+
+</ul>
+
+</aside>
+
+
+<div id="org8296944" class="figure">
+<p><img src="./images/pp_front.png" alt="pp_front.png" />
+</p>
+</div>
+<div class="slide-footer"><a href="https://sxmo.org">sxmo.org</a></div>
+
+</section>
+<section id="slide-org5db3b39">
+<h3 id="org5db3b39">SXMO - Tools</h3>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">Xorg</th>
+<th scope="col" class="org-left">Wayland</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Window Manager/Compositor</td>
+<td class="org-left">DWM</td>
+<td class="org-left">sway</td>
+</tr>
+
+<tr>
+<td class="org-left">Terminal</td>
+<td class="org-left">st</td>
+<td class="org-left">foot</td>
+</tr>
+
+<tr>
+<td class="org-left">Menu</td>
+<td class="org-left">dmenu</td>
+<td class="org-left">bemenu</td>
+</tr>
+
+<tr>
+<td class="org-left">Virtual Keyboard</td>
+<td class="org-left">svkbd</td>
+<td class="org-left">wvkbd</td>
+</tr>
+
+<tr>
+<td class="org-left">Desktop Widgets</td>
+<td class="org-left">conky</td>
+<td class="org-left">wayout</td>
+</tr>
+</tbody>
+</table>
+
+<ul>
+<li>lisgd</li>
+<li>tinydm</li>
+<li>ModemManager</li>
+<li>NetworkManager</li>
+
+</ul>
+
+</section>
+<section id="slide-org16a08de">
+<h3 id="org16a08de">SXMO - Buttons</h3>
+<aside class="notes">
+<p>
+Kamera umschalten und alles kurz zeigen
+</p>
+
+</aside>
+
+<ul>
+<li>Volume Up
+<ul>
+<li>1 tap Context Menu</li>
+<li>2 taps System Menu</li>
+<li>3 taps Window Menu</li>
+
+</ul></li>
+<li>Volume Down
+<ul>
+<li>1 tap Toggle Keyboard</li>
+<li>2 taps Toggle Layout</li>
+<li>3 taps Kill Window</li>
+
+</ul></li>
+<li>Power
+<ul>
+<li>1 tap Lock Screen</li>
+<li>2 taps Lock Screen (On)</li>
+<li>3 taps Terminal</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-org49e222b">
+<h3 id="org49e222b">SXMO - Gesten</h3>
+<aside class="notes">
+<ul>
+<li>alles kurz zeigen</li>
+<li>Aktion kann anders sein, je nachdem wie lang der Swipe ist</li>
+<li>alle Gesten haben eine Randkomponente, Swipes in der Mitte
+des Bildschirms werden an die Anwendung durchgereicht</li>
+
+</ul>
+
+</aside>
+
+
+<div id="org4aaf449" class="figure">
+<p><img src="./images/gestures.png" alt="gestures.png" />
+</p>
+</div>
+<div class="slide-footer">CC-BY-SA 4.0 <a href="https://sxmo.org">sxmo.org</a></div>
+
+</section>
+<section id="slide-org6fd2928">
+<h3 id="org6fd2928">SXMO - Menusystem</h3>
+<aside class="notes">
+<ul>
+<li>durch die Menus gehen</li>
+<li>anmerken, dass die Einträge ergänzt und angepasst werden können</li>
+<li>Vim als App starten und Kontextmenu zeigen</li>
+
+</ul>
+
+</aside>
+
+<ul>
+<li>Toucheingabe</li>
+<li>Hardwareknöpfe</li>
+
+</ul>
+
+</section>
+<section id="slide-org89da27f">
+<h3 id="org89da27f">SXMO - Konfiguration</h3>
+<ul>
+<li><code>$XDG_CONFIG_DIR</code> (<code>~/.config/sxmo/</code>)</li>
+<li><code>profile</code>
+<ul>
+<li>SXMO spezifische Umgebungsvariablen</li>
+<li><code>~/.profile</code> wird davor von tinydm geladen</li>
+
+</ul></li>
+<li><code>xinit</code></li>
+<li><code>sway</code></li>
+<li><code>contacts.tsv</code>
+<ul>
+<li>Telefonnummer -&gt; Name</li>
+
+</ul></li>
+<li><code>block.tsv</code>
+<ul>
+<li>geblockte Nummern</li>
+
+</ul></li>
+<li><code>sfeedrc</code></li>
+<li><code>userscripts/</code>
+<ul>
+<li>landen automatisch im Menusystem</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-org4461e48">
+<h3 id="org4461e48">SXMO - Hooks</h3>
+<ul>
+<li>Standard Hooks in <code>/usr/share/sxmo/default_hooks/</code></li>
+<li>Benutzer Hooks in <code>$XDG_CONFIG_HOME/sxmo/hooks/</code></li>
+
+</ul>
+<p>
+<br />
+</p>
+<ul>
+<li><code>hooks/sxmo_hook_ring.sh</code></li>
+<li><code>hooks/sxmo_hook_pickup.sh</code></li>
+<li><code>hooks/sxmo_hook_lisgdstart.sh</code></li>
+<li><code>hooks/sxmo_hook_desktopwidget.sh</code></li>
+<li><code>hooks/sxmo_hook_contextmenu.sh</code></li>
+
+</ul>
+<div class="slide-footer"><a href="https://man.sr.ht/~anjan/sxmo-docs-next/USERGUIDE.md#stronghooksstrong">man.sr.ht/~anjan/sxmo-docs-next/USERGUIDE.md</a></div>
+
+</section>
+<section id="slide-orgea3b0e0">
+<h3 id="orgea3b0e0">SXMO - Hooks Beispiel</h3>
+<p>
+<code>sxmo_hook_ring.sh</code>
+</p>
+<div class="org-src-container">
+
+<pre class="src src-shell"><span style="color: #727072;">#</span><span style="color: #727072;">!/bin/</span><span style="color: #FF6188;">sh</span>
+
+<span style="color: #727072;"># </span><span style="color: #727072;">This script is executed (asynchronously) when you get an incoming call</span>
+<span style="color: #727072;"># </span><span style="color: #727072;">You can use it to play a ring tone</span>
+
+<span style="color: #727072;"># </span><span style="color: #727072;">$1 = Contact Name or Number (if not in contacts)</span>
+
+<span style="color: #727072;"># </span><span style="color: #727072;">Start the mpv ring until another hook </span><span style="color: #727072;">kill</span><span style="color: #727072;"> it or the max (10) is reached</span>
+mpv --quiet --no-video --loop=<span style="color: #AB9DF2; font-weight: bold;">10</span> /usr/share/sxmo/ring.ogg &amp;
+<span style="color: #FCFCFA;">MPVID</span>=$<span style="color: #FCFCFA;">!</span>
+<span style="color: #78DCE8;">echo</span> <span style="color: #FFD866;">"</span><span style="color: #AB9DF2;">$</span><span style="color: #FCFCFA;">MPVID</span><span style="color: #FFD866;">"</span> &gt; <span style="color: #FFD866;">"</span><span style="color: #AB9DF2;">$</span><span style="color: #FCFCFA;">XDG_RUNTIME_DIR</span><span style="color: #FFD866;">/sxmo.ring.pid"</span>
+
+<span style="color: #727072;"># </span><span style="color: #727072;">Vibrate while mpv is running</span>
+<span style="color: #FF6188;">while </span><span style="color: #78DCE8;">kill</span> -0 $<span style="color: #FCFCFA;">MPVID</span>; <span style="color: #FF6188;">do</span>
+        sxmo_vibrate <span style="color: #AB9DF2; font-weight: bold;">1500</span>
+        <span style="color: #78DCE8;">sleep</span> <span style="color: #AB9DF2; font-weight: bold;">0.5</span>
+<span style="color: #FF6188;">done</span>
+</pre>
+</div>
+<div class="slide-footer"><a href="https://git.sr.ht/~mil/sxmo-utils/tree/master/item/configs/default_hooks/sxmo_hook_ring.sh">git.sr.ht/~mil/sxmo-utils/tree/master/item/configs/default_hooks/sxmo_hook_ring.sh</a></div>
+
+
+</section>
+<section id="slide-org3a1a7be">
+<h3 id="org3a1a7be">SXMO - Umgebungsvariablen</h3>
+<aside class="notes">
+<ul>
+<li>weitere Konfiguration der Tools und wie sie miteinander interagieren</li>
+
+</ul>
+
+</aside>
+
+<ul>
+<li><code>$TERMCMD</code></li>
+<li><code>$BROWSER</code></li>
+<li><code>$EDITOR</code></li>
+
+</ul>
+<p>
+<br />
+</p>
+<ul>
+<li><code>$KEYBOARD_ARGS</code>
+<ul>
+<li><code>-o | clickclack -f /usr/share/sxmo/keytap.wav</code></li>
+
+</ul></li>
+
+</ul>
+<div class="slide-footer"><a href="https://man.sr.ht/~anjan/sxmo-docs-next/USERGUIDE.md#strongenvironment-variablesstrong">man.sr.ht/~anjan/sxmo-docs-next/USERGUIDE.md</a></div>
+
+</section>
+<section id="slide-orgc2815e0">
+<h3 id="orgc2815e0">Zusammenfassung</h3>
+<aside class="notes">
+<ul>
+<li>coole Hardware mit Erweiterungsmöglichkeiten</li>
+<li>verschiedenste Benutzeroberflächen zwischen denen wir wählen können</li>
+<li>SXMO als etwas anders und sehr flexibel kennengelernt</li>
+<li>sehr Hackerfreundlich</li>
+<li>Hoffnung auf mehr davon von verschiedenen Herstellern</li>
+<li>wenn ihr auch rumspielen wollt schaut doch mal im postmarketOS wiki ob
+vielleicht eines eurer alten Smartphones zumindest teilweise unterstützt wird</li>
+
+</ul>
+
+</aside>
+
+
+<div id="org5372a11" class="figure">
+<p><img src="./images/pp_keyboard.png" alt="pp_keyboard.png" />
+</p>
+</div>
+
+</section>
+<section id="slide-orgc7d7178">
+<h3 id="orgc7d7178">Fragen/Ideen</h3>
+<p>
+<br />
+<br />
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">WWW</td>
+<td class="org-left"><a href="https://zuendmasse.de">https://zuendmasse.de</a></td>
+</tr>
+
+<tr>
+<td class="org-left">Mail</td>
+<td class="org-left">wose@zuendmasse.de</td>
+</tr>
+
+<tr>
+<td class="org-left">IRC libera.chat</td>
+<td class="org-left">wose</td>
+</tr>
+
+<tr>
+<td class="org-left">Matrix</td>
+<td class="org-left">@wose:zuendmasse.de</td>
+</tr>
+
+<tr>
+<td class="org-left">GitHub/GitLab/sr.ht</td>
+<td class="org-left">wose</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</div>
+</div>
+<script src="./reveal.js/dist/reveal.js"></script>
+<script src="./reveal.js/plugin/markdown/markdown.js"></script>
+<script src="./reveal.js/plugin/notes/notes.js"></script>
+<script src="./reveal.js/plugin/search/search.js"></script>
+<script src="./reveal.js/plugin/zoom/zoom.js"></script>
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: false,
+progress: false,
+history: false,
+center: false,
+slideNumber: false,
+rollingLinks: false,
+keyboard: true,
+mouseWheel: false,
+fragmentInURL: false,
+hashOneBasedIndex: false,
+pdfSeparateFragments: true,
+overview: true,
+width: 1920,
+height: 1080,
+minScale: 0.20,
+maxScale: 2.50,
+
+transition: 'none',
+transitionSpeed: 'default',
+
+// Plugins with reveal.js 4.x
+plugins: [ RevealMarkdown, RevealNotes, RevealSearch, RevealZoom ],
+
+// Optional libraries used to extend reveal.js
+dependencies: [
+]
+
+});
+</script>
+</body>
+</html>
