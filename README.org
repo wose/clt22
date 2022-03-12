@@ -8,3 +8,15 @@ In diesem Vortrag schauen wir uns das PinePhone und PinePhone Pro an, gehen auf
 die verfügbaren und denkbaren Hardware Add-Ons ein und entdecken mit SXMO eine
 für Mobiltelefone ungewohnte aber extrem flexible Bedienumgebung.
 #+end_quote
+
+** Talk & Video
+The talk will be live streamed 2022-03-12 @ 14oo GMT+1.
+- [[https://pad.live.linux-tage.de/gV8yP0yTS6iZjQ3L4WnEYw][Pad for questions]]
+- [[https://chemnitzer.linux-tage.de/2022/de/programm/beitrag/233][Live Stream/Video]]
+
+** Slides
+The rendered slides with clickable links can be found at
+https://wose.github.io/clt22/slides/presentation.html
+
+** Post Talk Notes
+Will be filled after the talk.
